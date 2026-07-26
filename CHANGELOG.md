@@ -8,6 +8,24 @@ Todos los cambios reseñables del proyecto. Formato basado en
 
 Nada todavía.
 
+## [1.0.2] — 2026-07-26
+
+**Sin cambios en el programa**: el ejecutable hace exactamente lo mismo que el de la v1.0.1.
+Lo que cambia es cómo se construye y se verifica.
+
+### Añadido
+
+- **Integración continua**: cada push y cada pull request levantan una máquina Windows limpia
+  que importa los nueve módulos con un Python recién instalado y sin un solo `pip install`
+  —la forma honesta de comprobar que el proyecto sigue sin dependencias en tiempo de
+  ejecución—, ejecuta la batería completa y, si pasa, compila el `.exe` y lo deja descargable
+  como artefacto durante 14 días.
+
+### Cambiado
+
+- `build.ps1` acepta `-Python <ruta>` y, si la ruta por defecto no existe, coge el `python` del
+  PATH avisando. Antes tenía la ruta a fuego.
+
 ## [1.0.1] — 2026-07-26
 
 ### Corregido
@@ -75,6 +93,7 @@ Primera versión.
 - Empaquetado con PyInstaller en modo carpeta, sin UPX y con metadatos de versión, para no
   disparar las heurísticas de los antivirus.
 
-[Sin publicar]: https://github.com/Riiuk/Autoclicker/compare/v1.0.1...HEAD
+[Sin publicar]: https://github.com/Riiuk/Autoclicker/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/Riiuk/Autoclicker/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/Riiuk/Autoclicker/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/Riiuk/Autoclicker/releases/tag/v1.0.0
