@@ -4,6 +4,11 @@ Autoclicker con **macros configurables** para Windows. Pulsas la tecla que tú e
 programa mantiene pulsado un botón del ratón, hace clics a un ritmo fijo o ejecuta una
 secuencia de pasos. Vuelves a pulsarla y para.
 
+### ⬇ [Descargar la última versión](https://github.com/Riiuk/Autoclicker/releases/latest)
+
+Windows 10/11 de 64 bits · 7,8 MB · sin instalador ·
+[todas las versiones](https://github.com/Riiuk/Autoclicker/releases)
+
 Sirve para cualquier cosa que exija tener un botón apretado mucho rato o repetir la misma
 pulsación cientos de veces: juegos, herramientas de dibujo, pruebas de interfaces, tareas
 repetitivas de escritorio, o simplemente ahorrarle la muñeca a quien no puede estar
@@ -21,11 +26,15 @@ machacando el ratón.
 
 ## Instalar
 
-Descarga o compila la carpeta `Autoclicker` y ejecuta **`Autoclicker.exe`**. El ejecutable
-necesita la carpeta `lib` que tiene al lado, así que muévelos siempre juntos.
+Baja el `.zip` de la [última versión](https://github.com/Riiuk/Autoclicker/releases/latest),
+descomprímelo y ejecuta **`Autoclicker\Autoclicker.exe`**. El ejecutable necesita la carpeta
+`lib` que tiene al lado, así que muévelos siempre juntos.
 
 No hay instalador y no toca el registro. Para desinstalar, borra la carpeta (y
 `%APPDATA%\Autoclicker` si quieres llevarte también la configuración).
+
+Cada versión publica el SHA-256 de sus ficheros en las notas de la release, por si quieres
+comprobar que lo que has bajado es lo que se publicó.
 
 ## Cómo se usa
 
