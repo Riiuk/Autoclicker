@@ -7,13 +7,21 @@
 # arbitrario durante el build, y el bootloader precompilado que acaba dentro del .exe) son
 # código que no hemos escrito y que entra en el artefacto.
 
-param([switch]$Relock)
+# -Python permite compilar con otro intérprete (lo usa la integración continua, donde no
+# existe C:\python39).
+param([switch]$Relock, [string]$Python = "C:\python39\python.exe")
 
 $ErrorActionPreference = "Stop"
 $raiz = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $raiz
 
-$python = "C:\python39\python.exe"
+$python = $Python
+if (-not (Test-Path $python)) {
+    $encontrado = (Get-Command python -ErrorAction SilentlyContinue).Source
+    if (-not $encontrado) { throw "No se encuentra Python. Pásalo con -Python <ruta>." }
+    Write-Host "No existe $python; se usa $encontrado" -ForegroundColor Yellow
+    $python = $encontrado
+}
 $venv = Join-Path $raiz ".venv"
 $py = Join-Path $venv "Scripts\python.exe"
 $lock = Join-Path $raiz "requirements-build.lock"

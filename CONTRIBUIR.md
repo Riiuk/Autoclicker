@@ -22,8 +22,9 @@ C:\python39\python.exe -m unittest discover -s pruebas -t .
 El entorno virtual (`.venv`) solo hace falta para compilar el `.exe`, y lo crea `build.ps1`
 solo la primera vez.
 
-> Si la ruta de tu Python es otra, cámbiala en `build.ps1` (`$python`). El código no depende de
-> ninguna ruta concreta.
+> Si tu Python está en otro sitio, pásaselo al compilar: `.\build.ps1 -Python C:\ruta\python.exe`.
+> Si la ruta por defecto no existe, el script coge el `python` del PATH y avisa. El código no
+> depende de ninguna ruta concreta.
 
 ## Pruebas
 
@@ -46,6 +47,22 @@ sesión en milisegundos.
 
 Si añades algo al motor, la prueba mínima es siempre la misma: arrancarlo, pararlo y comprobar
 que `iny.pendientes()` está vacío.
+
+### Integración continua
+
+Cada push a `main` y cada pull request lanzan
+[`.github/workflows/pruebas.yml`](.github/workflows/pruebas.yml) sobre una máquina Windows
+limpia. Son dos trabajos:
+
+- **Batería en Windows** — importa los nueve módulos con un Python recién instalado y **sin
+  hacer un solo `pip install`**, que es la forma honesta de comprobar que sigue sin
+  dependencias en ejecución; luego ejecuta las pruebas.
+- **Compilar el .exe** — solo si pasa el anterior. Corre `build.ps1` completo y sube el
+  resultado como artefacto descargable durante 14 días. Coge fallos de empaquetado, que no se
+  ven ejecutando desde el código fuente.
+
+Si algo se rompe sale un aspa roja en el commit y llega un correo. Lo que falle ahí y no en tu
+máquina suele ser una dependencia de tu entorno que no está declarada.
 
 ### Lo que las pruebas no cubren
 

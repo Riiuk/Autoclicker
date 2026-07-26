@@ -1,5 +1,7 @@
 # Autoclicker
 
+[![pruebas](https://github.com/Riiuk/Autoclicker/actions/workflows/pruebas.yml/badge.svg)](https://github.com/Riiuk/Autoclicker/actions/workflows/pruebas.yml)
+
 Autoclicker con **macros configurables** para Windows. Pulsas la tecla que tú elijas y el
 programa mantiene pulsado un botón del ratón, hace clics a un ritmo fijo o ejecuta una
 secuencia de pasos. Vuelves a pulsarla y para (o, si prefieres, cada pulsación la lanza una

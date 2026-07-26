@@ -1,0 +1,70 @@
+# Integración continua: en cada push y cada pull request, GitHub levanta una máquina Windows
+# limpia, se descarga el proyecto y ejecuta la batería de pruebas. Si algo se rompe, sale un
+# aspa roja en el commit y llega un correo, sin depender de que alguien se acuerde de ejecutar
+# las pruebas antes de subir.
+#
+# Dos trabajos:
+#   pruebas   — la batería completa. Es el que de verdad protege, y tarda segundos.
+#   compilar  — comprueba que el .spec sigue produciendo un .exe y lo deja descargable.
+#               Coge fallos de empaquetado, que no se ven ejecutando desde el código fuente.
+
+name: pruebas
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:        # permite lanzarlo a mano desde la pestaña Actions
+
+# Si empujas dos veces seguidas, cancela la ejecución anterior en vez de encolarla.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pruebas:
+    name: Batería en Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Preparar Python 3.9
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+          architecture: x64
+
+      - name: Comprobar que no hay dependencias en tiempo de ejecución
+        shell: pwsh
+        run: |
+          # La característica del proyecto es que arranca con la biblioteca estándar y nada
+          # más. Aquí se comprueba de verdad: intérprete recién instalado, sin pip install.
+          python -c "import winapi, teclas, hotkeys, modelo, almacen, motor, indicador, ui, ui_macro; print('los 9 módulos importan sin instalar nada')"
+
+      - name: Ejecutar la batería
+        run: python -m unittest discover -s pruebas -t . -v
+
+  compilar:
+    name: Compilar el .exe
+    runs-on: windows-latest
+    needs: pruebas
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Preparar Python 3.9
+        id: py
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+          architecture: x64
+
+      - name: Compilar
+        shell: pwsh
+        run: .\build.ps1 -Python "${{ steps.py.outputs.python-path }}"
+
+      - name: Guardar el resultado
+        uses: actions/upload-artifact@v4
+        with:
+          name: Autoclicker-${{ github.sha }}
+          path: dist/Autoclicker/
+          retention-days: 14
