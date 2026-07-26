@@ -1,0 +1,3 @@
+# Única dependencia del proyecto, y solo para compilar. En tiempo de ejecución no hay
+# ninguna: todo sale de la biblioteca estándar y de ctypes.
+pyinstaller==6.21.0

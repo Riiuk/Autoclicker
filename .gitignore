@@ -1,0 +1,9 @@
+.council/
+.venv/
+build/
+dist/
+__pycache__/
+*.pyc
+error.log
+error.log.1
+*.zip
