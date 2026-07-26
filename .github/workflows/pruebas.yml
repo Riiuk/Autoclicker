@@ -63,7 +63,7 @@ jobs:
         run: .\build.ps1 -Python "${{ steps.py.outputs.python-path }}"
 
       - name: Guardar el resultado
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: Autoclicker-${{ github.sha }}
           path: dist/Autoclicker/
