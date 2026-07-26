@@ -6,6 +6,10 @@ Todos los cambios reseñables del proyecto. Formato basado en
 
 ## [Sin publicar]
 
+Nada todavía.
+
+## [1.0.1] — 2026-07-26
+
 ### Corregido
 
 - Una macro que el validador marcaba como «No soportada» desaparecía del `config.json` en el
@@ -71,5 +75,6 @@ Primera versión.
 - Empaquetado con PyInstaller en modo carpeta, sin UPX y con metadatos de versión, para no
   disparar las heurísticas de los antivirus.
 
-[Sin publicar]: https://github.com/Riiuk/Autoclicker/compare/v1.0.0...HEAD
+[Sin publicar]: https://github.com/Riiuk/Autoclicker/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/Riiuk/Autoclicker/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/Riiuk/Autoclicker/releases/tag/v1.0.0
