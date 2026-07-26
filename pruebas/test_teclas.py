@@ -64,7 +64,7 @@ class Reservadas(unittest.TestCase):
 
 
 class TablaUnica(unittest.TestCase):
-    """Una sola tabla de botones, y release_all la recorre."""
+    """Una sola tabla de botones, y `soltar_todo_ciego` la recorre."""
 
     def test_los_botones_tienen_flags_distintos(self):
         vistos = set()

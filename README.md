@@ -2,23 +2,25 @@
 
 Autoclicker con **macros configurables** para Windows. Pulsas la tecla que tú elijas y el
 programa mantiene pulsado un botón del ratón, hace clics a un ritmo fijo o ejecuta una
-secuencia de pasos. Vuelves a pulsarla y para.
-
-### ⬇ [Descargar la última versión](https://github.com/Riiuk/Autoclicker/releases/latest)
-
-Windows 10/11 de 64 bits · 7,8 MB · sin instalador ·
-[todas las versiones](https://github.com/Riiuk/Autoclicker/releases)
+secuencia de pasos. Vuelves a pulsarla y para (o, si prefieres, cada pulsación la lanza una
+sola vez).
 
 Sirve para cualquier cosa que exija tener un botón apretado mucho rato o repetir la misma
 pulsación cientos de veces: juegos, herramientas de dibujo, pruebas de interfaces, tareas
 repetitivas de escritorio, o simplemente ahorrarle la muñeca a quien no puede estar
 machacando el ratón.
 
+### ⬇ [Descargar la última versión](https://github.com/Riiuk/Autoclicker/releases/latest)
+
+Windows 10/11 de 64 bits · 7,8 MB · sin instalador ·
+[todas las versiones](https://github.com/Riiuk/Autoclicker/releases)
+
 - **Cero dependencias en tiempo de ejecución.** Todo sale de la biblioteca estándar de Python
   y de `ctypes` hablando con Win32 directamente. Nada de `pynput`, `keyboard` ni `pyautogui`.
 - **No se queda pegado.** Nueve rutas distintas garantizan que ningún botón sobreviva a un
-  cierre, un fallo o un `taskkill`, y hay una tecla de pánico que funciona aunque la ventana
-  esté colgada.
+  cierre o a un fallo, y hay una tecla de pánico que funciona aunque la ventana esté colgada.
+  Si el proceso muere de golpe (`taskkill /F`), basta con volver a abrir el programa: suelta
+  todo al arrancar.
 - **Avisa aunque la otra aplicación esté a pantalla completa**, con sonidos y un indicador
   flotante.
 - **No es un keylogger**, y eso está garantizado por diseño, no por promesa. Ver
@@ -51,8 +53,11 @@ comprobar que lo que has bajado es lo que se publicó.
 | **Clic automático** | Clics repetidos al ritmo que digas (clics/s o milisegundos), con variación aleatoria opcional para que no salgan clavados. |
 | **Secuencia de pasos** | Lista de pasos —pulsar tecla, esperar, clic, soltar— que se repite N veces o sin parar. |
 
-Puedes crear tantas macros como quieras, cada una con su tecla. Si dos intentan usar el mismo
-botón a la vez, la segunda se rechaza diciéndote cuál lo tiene ocupado.
+Cada macro elige además cómo se comporta su tecla: **interruptor** (una pulsación arranca, otra
+para) o **un disparo por pulsación**.
+
+Puedes crear hasta 200 macros, cada una con su tecla. Si dos intentan usar el mismo botón a la
+vez, la segunda se rechaza diciéndote cuál lo tiene ocupado.
 
 ### Atajos de teclado
 
@@ -114,7 +119,11 @@ Todo se guarda en un fichero de texto que puedes editar a mano:
 
 (*Archivo → Abrir la carpeta de configuración* te lleva ahí.) El programa **nunca** revienta
 por un fichero mal escrito: lo que no entiende lo marca como «No soportada», deshabilita esa
-macro y te lo dice en la barra de estado. Ejemplo de una macro que mantiene el clic izquierdo:
+macro y te lo dice en la barra de estado. Eso sí, una macro «No soportada» ya no se vuelve a
+guardar: en cuanto edites cualquier otra cosa desaparece del `config.json` —queda la copia
+`config.json.bak`—, así que si quieres conservarla, sácala antes con *Archivo → Exportar*.
+
+Ejemplo de una macro que mantiene el clic izquierdo:
 
 ```json
 {
@@ -137,6 +146,23 @@ del teclado. `mods` es una máscara: 1 = Ctrl, 2 = Alt, 4 = Mayús. Una hotkey *
 modificadores dispara aunque tengas Mayús o Ctrl apretados; si exigiera lo contrario, dejaría
 de responder en cuanto la aplicación de destino usara esas teclas para otra cosa.
 
+El resto del formato:
+
+| Campo | Valores |
+|---|---|
+| `hotkey.modo` | `"toggle"` (interruptor) o `"pulso"` (un disparo por pulsación) |
+| `hotkey.tragar_tecla` | `true` para que la tecla no llegue a la otra aplicación. Hay teclas que **nunca** se tragan por accesibilidad: Tab, Bloq Mayús, Esc, Insert, Windows, F1 y las flechas |
+| `accion.tipo` | `"MANTENER"`, `"CLIC_AUTO"` o `"SECUENCIA"` |
+| `accion.objetivo` | `{"tipo":"raton","boton":"izq\|der\|medio\|x1\|x2"}` o `{"tipo":"tecla","vk":87}` |
+| `CLIC_AUTO` | `intervalo_ms`, `jitter_intervalo_ms`, `duracion_ms`, `jitter_duracion_ms`, `repeticiones` (0 = sin parar) |
+| `SECUENCIA` | `repeticiones` y `pasos`, con `op` igual a `tecla_abajo`, `tecla_arriba`, `clic` o `esperar` |
+| `auto_soltar_min` | Suelta todo pasados N minutos. 0 = sin límite |
+| `retardo_inicial_ms` | Espera antes de empezar |
+| `ajustes` | `debounce_ms`, `seguir_foco`, `sonidos`, `indicador` |
+
+Topes de seguridad del validador: 200 macros, 200 pasos por secuencia, 1 MB de fichero y 12
+horas de auto-soltar.
+
 ## Privacidad
 
 El programa instala un hook global de teclado (`WH_KEYBOARD_LL`), que técnicamente ve todo lo
@@ -153,16 +179,23 @@ hay telemetría, no se manda nada a ninguna parte.
 
 ## Cómo está hecho
 
-Python 3.9 + tkinter + `ctypes`/Win32. Unas 4.200 líneas, 3 hilos y ninguna dependencia en
-ejecución.
+Python 3.9 + tkinter + `ctypes`/Win32. Unas 4.000 líneas de programa (5.000 contando las
+pruebas) y ninguna dependencia en ejecución. Tres hilos en el camino de entrada —interfaz, hook
+y motor—, más uno para los sonidos y otro efímero para guardar en disco.
 
 | Fichero | Qué hace |
 |---|---|
 | `winapi.py` | Capa Win32: `SendInput` con buffer preasignado, tabla única de botones, temporizador de alta resolución, DPI, mutex, elevación. |
+| `teclas.py` | Nombres legibles de tecla en español, identidad `(sc, ext)` y las teclas que nunca se tragan. |
 | `hotkeys.py` | Hook `WH_KEYBOARD_LL` en su propio hilo con bucle de mensajes. Frontera cerrada, anti-autorepeat, captura acotada. |
 | `motor.py` | Un solo hilo con scheduler cooperativo de generadores. `EstadoPulsado` es el dueño único de qué está pulsado. |
 | `modelo.py` / `almacen.py` | Modelo, validador estricto y persistencia atómica. |
 | `ui.py` / `ui_macro.py` / `indicador.py` | Interfaz ttk, diálogo de edición e indicador flotante. |
+| `main.py` | Arranque y cableado: DPI, instancia única y redes de seguridad. |
+
+El recorrido completo de una pulsación, las fronteras entre capas, los invariantes que no se
+pueden romper y las recetas para los cambios más habituales están en
+[`ARQUITECTURA.md`](ARQUITECTURA.md).
 
 Tres decisiones que parecen raras y no lo son, explicadas al detalle en
 [`DECISIONES.md`](DECISIONES.md):
@@ -192,13 +225,22 @@ compilar.
 dependencias de compilación va fijado con hashes en `requirements-build.lock`.
 
 ```powershell
-python -m unittest discover -s pruebas -t .     # 72 pruebas, sin ratón ni ventanas
-python motor_test.py                            # el motor sin interfaz, para depurar
+C:\python39\python.exe -m unittest discover -s pruebas -t .   # la batería, sin ratón ni ventanas
+C:\python39\python.exe motor_test.py                          # el motor sin interfaz, para depurar
 ```
 
 Las pruebas cubren en headless lo que de otro modo exigiría probarlo a mano: el invariante de
-que todo `down` acaba con su `up` tras parar, pánico o cierre; la matemática de CPS y jitter;
-el validador de configuración; la recuperación desde `.bak`; y el emparejamiento de teclas.
+que todo `down` acaba con su `up` tras parar o un pánico; la matemática de CPS y jitter; el
+validador de configuración; la recuperación desde `.bak`; y el emparejamiento de teclas.
+
+## Documentación
+
+| | |
+|---|---|
+| [`ARQUITECTURA.md`](ARQUITECTURA.md) | Cómo funciona por dentro, los invariantes, las recetas para cambios habituales y qué falta por hacer. |
+| [`DECISIONES.md`](DECISIONES.md) | Por qué está hecho así. Léelo antes de «arreglar» algo que parece raro. |
+| [`CONTRIBUIR.md`](CONTRIBUIR.md) | Montar el entorno, ejecutar las pruebas, convenciones y cómo publicar una versión. |
+| [`CHANGELOG.md`](CHANGELOG.md) | Qué cambió en cada versión. |
 
 ## Antes de usarlo
 

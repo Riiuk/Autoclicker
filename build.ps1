@@ -81,6 +81,6 @@ Write-Host "Listo. Ejecuta ESTE fichero:" -ForegroundColor Green
 Write-Host "    $exe" -ForegroundColor Green
 Write-Host "Carpeta: $tam MB   Zip: $([math]::Round((Get-Item $zip).Length / 1MB, 1)) MB"
 Write-Host ""
-Write-Host "SHA-256 (apúntalos en el README):" -ForegroundColor Cyan
+Write-Host "SHA-256 (van en las notas de la release):" -ForegroundColor Cyan
 Write-Host ("  Autoclicker.exe  " + (Get-FileHash $exe -Algorithm SHA256).Hash)
 Write-Host ("  Autoclicker.zip  " + (Get-FileHash $zip -Algorithm SHA256).Hash)

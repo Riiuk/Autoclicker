@@ -3,13 +3,18 @@
 
 ========================== INVARIANTE PRINCIPAL — NO LO ROMPAS ==========================
 `EstadoPulsado` es el ÚNICO que sabe qué está físicamente pulsado, y solo se muta desde este
-hilo. Las nueve rutas capaces de soltar o pulsar pasan por él:
+hilo. Hay nueve rutas capaces de soltar:
 
-  1. el `finally` del bucle             6. `release_all()` al arrancar
+  1. el `finally` del bucle             6. `soltar_todo_ciego()` al arrancar
   2. `atexit`                           7. el dead-man switch
   3. `sys`/`threading.excepthook`       8. el interruptor maestro
   4. cierre de la ventana               9. "Probar 3 s"
   5. la tecla de pánico
+
+Las ORDENADAS (1, 4, 5, 7, 8 y 9) pasan por `EstadoPulsado`. Las de EMERGENCIA (2, 3 y 6) NO:
+disparan a ciegas sobre el inyector a propósito, porque cuando este hilo puede estar muerto o
+colgado, un `up` de más es inocuo y un botón izquierdo pegado no. Por eso `soltar_todo_ciego`
+no sobra y por eso `Inyector` lleva lock.
 
 Y una décima que NO es una capa de suelta sino de REPULSA: el vigilante de foco. Al volver de
 un alt-tab repulsa **solo lo que `debe_estar_pulsado()` siga devolviendo**. Si el pánico saltó
@@ -18,8 +23,8 @@ mientras el juego estaba en segundo plano, volver al juego no debe pulsar nada.
 
 El scheduler es cooperativo: cada macro es un generador que hace `yield <segundos>`. Los
 vencimientos son absolutos para que no se acumule deriva. Las tareas periódicas (foco cada
-150 ms, sonda del hook cada 2 s, dead-man) son generadores más, no hilos aparte: así el
-recuento de hilos del proceso se queda en tres honestos y sigue habiendo un único emisor.
+150 ms, sonda del hook cada 2 s, dead-man) son generadores más, no hilos aparte: así el camino
+de entrada se queda en tres hilos honestos y sigue habiendo un único emisor de `SendInput`.
 """
 
 import collections

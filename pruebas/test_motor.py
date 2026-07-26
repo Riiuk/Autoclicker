@@ -61,7 +61,7 @@ class Base(unittest.TestCase):
 
 
 class InvarianteDeSuelta(Base):
-    """Tras parar, pánico o release_all, TODO down tiene su up."""
+    """Tras parar, pánico o soltar todo, TODO down tiene su up."""
 
     def test_mantener_toggle(self):
         m = self.montar(_cfg(_mantener()))
