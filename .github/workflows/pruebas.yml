@@ -26,10 +26,10 @@ jobs:
     name: Batería en Windows
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Preparar Python 3.9
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.9'
           architecture: x64
@@ -49,11 +49,11 @@ jobs:
     runs-on: windows-latest
     needs: pruebas
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Preparar Python 3.9
         id: py
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.9'
           architecture: x64
@@ -63,7 +63,7 @@ jobs:
         run: .\build.ps1 -Python "${{ steps.py.outputs.python-path }}"
 
       - name: Guardar el resultado
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: Autoclicker-${{ github.sha }}
           path: dist/Autoclicker/
