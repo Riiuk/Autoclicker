@@ -119,9 +119,9 @@ Todo se guarda en un fichero de texto que puedes editar a mano:
 
 (*Archivo → Abrir la carpeta de configuración* te lleva ahí.) El programa **nunca** revienta
 por un fichero mal escrito: lo que no entiende lo marca como «No soportada», deshabilita esa
-macro y te lo dice en la barra de estado. Eso sí, una macro «No soportada» ya no se vuelve a
-guardar: en cuanto edites cualquier otra cosa desaparece del `config.json` —queda la copia
-`config.json.bak`—, así que si quieres conservarla, sácala antes con *Archivo → Exportar*.
+macro y te lo dice en la barra de estado. Y no la pierdes: una macro «No soportada» se conserva
+en el fichero tal y como estaba, así que si corriges el fallo a mano —o vuelves a una versión
+que sí la entienda— sigue ahí.
 
 Ejemplo de una macro que mantiene el clic izquierdo:
 

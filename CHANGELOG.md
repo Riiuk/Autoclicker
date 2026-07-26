@@ -6,6 +6,13 @@ Todos los cambios reseñables del proyecto. Formato basado en
 
 ## [Sin publicar]
 
+### Corregido
+
+- Una macro que el validador marcaba como «No soportada» desaparecía del `config.json` en el
+  siguiente guardado, porque solo se serializaban las que se habían entendido. Ahora se guarda
+  su JSON original y se devuelve intacto al escribir, así que sobrevive tanto a un dedazo
+  editando el fichero a mano como a volver a una versión anterior del programa.
+
 ### Cambiado
 
 - Portada del README con enlace de descarga directo a la última release.

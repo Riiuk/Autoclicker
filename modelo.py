@@ -9,6 +9,8 @@ Reglas del validador:
   * Todos los caminos de carga (disco, .bak, importar) pasan por `validar_config()`.
   * NUNCA lanza. Lo que no cuadra se degrada a `soportada=False` con un motivo legible.
   * Tipo y rango explícitos en cada campo; nada se cuela por ser "casi" válido.
+  * Lo que se degrada NO se tira: se guarda su JSON original en `Macro.bruto` y se devuelve
+    intacto al escribir. Perder la macro de alguien por no entenderla sería peor que el fallo.
 
 Vocabulario: claves y valores del JSON en español, salvo los tres tipos de acción, que
 van en mayúsculas por ser constantes del dominio.
@@ -115,6 +117,11 @@ class Macro:
     retardo_inicial_ms: int = 0
     soportada: bool = True
     motivo: str = ""
+    # JSON original de las macros que NO se entendieron. Se guarda para poder devolverlas
+    # intactas al escribir: una macro que este programa no sabe interpretar sigue siendo del
+    # usuario, y perderla en el siguiente guardado por haber vuelto a una versión anterior o
+    # por un dedazo al editar el fichero a mano sería destruir su trabajo en silencio.
+    bruto: dict = None
 
     def recursos(self):
         """Recursos físicos que esta macro va a ocupar. Lo usa el árbitro."""
@@ -347,6 +354,7 @@ def validar_macro(bruto):
         m.soportada = False
         m.habilitada = False
         m.motivo = "; ".join(fallos[:3])
+        m.bruto = copy.deepcopy(bruto)
     return m
 
 
@@ -437,6 +445,27 @@ def macro_a_json(m):
             "retardo_inicial_ms": m.retardo_inicial_ms}
 
 
+def macros_a_json(macros):
+    """Serializa la lista, conservando tal cual lo que no se entendió.
+
+    Una macro `soportada=False` no se puede volver a serializar desde sus campos, porque el
+    validador no llegó a rellenarlos. Lo que se hace es devolver su JSON original palabra por
+    palabra, con el `id` que se le acabara asignando: así una versión del programa que sí la
+    entienda la recupera intacta, y editar cualquier otra macro no borra la que esta versión
+    no sabe leer.
+    """
+    salida = []
+    for m in macros:
+        if m.soportada:
+            salida.append(macro_a_json(m))
+        elif isinstance(m.bruto, dict):
+            copia = copy.deepcopy(m.bruto)
+            copia["id"] = m.id
+            salida.append(copia)
+        # Si no hay `bruto` es que la entrada no era ni un objeto: no hay nada que conservar.
+    return salida
+
+
 def config_a_json(cfg):
     aj = cfg.ajustes
     return {"version": VERSION_CONFIG,
@@ -445,7 +474,7 @@ def config_a_json(cfg):
                         "seguir_foco": aj.seguir_foco,
                         "sonidos": aj.sonidos,
                         "indicador": aj.indicador},
-            "macros": [macro_a_json(m) for m in cfg.macros if m.soportada]}
+            "macros": macros_a_json(cfg.macros)}
 
 
 def nueva_macro(nombre="Macro nueva"):

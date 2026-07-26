@@ -53,6 +53,31 @@ class GuardarYCargar(ConCarpetaTemporal):
         almacen.guardar(cfg)
         self.assertTrue(os.path.exists(os.path.join(self.dir, "config.json.bak")))
 
+    def test_una_macro_no_soportada_sobrevive_en_disco(self):
+        """El caso real: alguien vuelve a una versión anterior, o se equivoca editando el
+        fichero a mano, y luego toca cualquier otra cosa en la interfaz."""
+        futura = {"id": "futura", "nombre": "Rueda", "habilitada": True,
+                  "hotkey": {"sc": 88, "ext": 0, "vk": 123},
+                  "accion": {"tipo": "RUEDA_DEL_RATON", "vueltas": 3}}
+        buena = {"id": "buena", "nombre": "Minar", "habilitada": True,
+                 "hotkey": {"sc": 66, "ext": 0, "vk": 119},
+                 "accion": {"tipo": "MANTENER",
+                            "objetivo": {"tipo": "raton", "boton": "izq"}}}
+        self.escribir("config.json", json.dumps({"version": 1,
+                                                 "macros": [futura, buena]}))
+
+        cfg, avisos = almacen.cargar()
+        self.assertTrue(any("Rueda" in a for a in avisos))
+        cfg.macros[1].nombre = "Minar más"
+        self.assertIsNone(almacen.guardar(cfg))
+
+        vuelta, _ = almacen.cargar()
+        self.assertEqual([m.nombre for m in vuelta.macros], ["Rueda", "Minar más"])
+        self.assertEqual(vuelta.macros[0].accion.tipo, modelo.TIPO_MANTENER)  # sin interpretar
+        self.assertFalse(vuelta.macros[0].soportada)
+        with open(os.path.join(self.dir, "config.json"), encoding="utf-8") as f:
+            self.assertIn("RUEDA_DEL_RATON", f.read())
+
     def test_no_deja_temporales(self):
         almacen.guardar(modelo.Config())
         self.assertEqual([f for f in os.listdir(self.dir) if f.endswith(".tmp")], [])

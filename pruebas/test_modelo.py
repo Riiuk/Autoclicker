@@ -166,6 +166,74 @@ class IdaYVuelta(unittest.TestCase):
         self.assertEqual(a, b)
 
 
+class ConservaLoNoSoportado(unittest.TestCase):
+    """Lo que este programa no entiende sigue siendo del usuario: no se tira al guardar."""
+
+    def _futura(self):
+        return {"id": "futura", "nombre": "De una versión que vendrá", "habilitada": True,
+                "hotkey": {"sc": 88, "ext": 0, "vk": 123, "modo": "toggle"},
+                "accion": {"tipo": "RUEDA_DEL_RATON", "vueltas": 3, "sentido": "arriba"}}
+
+    def test_sobrevive_a_guardar_y_volver_a_cargar(self):
+        cfg, _ = modelo.validar_config({"version": 1, "macros": [self._futura()]})
+        self.assertFalse(cfg.macros[0].soportada)
+
+        vuelta, _ = modelo.validar_config(modelo.config_a_json(cfg))
+        self.assertEqual(len(vuelta.macros), 1, "la macro desconocida se ha perdido")
+        self.assertEqual(vuelta.macros[0].nombre, "De una versión que vendrá")
+        self.assertFalse(vuelta.macros[0].soportada)
+
+    def test_se_conserva_palabra_por_palabra(self):
+        """Incluidos los campos que esta versión ni sabe que existen."""
+        cfg, _ = modelo.validar_config({"version": 1, "macros": [self._futura()]})
+        emitida = modelo.config_a_json(cfg)["macros"][0]
+        self.assertEqual(emitida["accion"], {"tipo": "RUEDA_DEL_RATON", "vueltas": 3,
+                                             "sentido": "arriba"})
+        self.assertEqual(emitida["id"], "futura")
+
+    def test_editar_otra_macro_no_la_borra(self):
+        cfg, _ = modelo.validar_config(
+            {"version": 1, "macros": [self._futura(), _macro_ok()]})
+        cfg.macros[1].nombre = "Renombrada"
+        vuelta, _ = modelo.validar_config(modelo.config_a_json(cfg))
+        self.assertEqual([m.nombre for m in vuelta.macros],
+                         ["De una versión que vendrá", "Renombrada"])
+
+    def test_aguanta_varias_vueltas(self):
+        datos = {"version": 1, "macros": [self._futura()]}
+        for _ in range(5):
+            cfg, _ = modelo.validar_config(datos)
+            datos = modelo.config_a_json(cfg)
+        self.assertEqual(len(datos["macros"]), 1)
+        self.assertEqual(datos["macros"][0]["accion"]["vueltas"], 3)
+
+    def test_conserva_el_id_desambiguado(self):
+        a, b = self._futura(), self._futura()
+        cfg, _ = modelo.validar_config({"version": 1, "macros": [a, b]})
+        ids = [m.id for m in cfg.macros]
+        self.assertNotEqual(ids[0], ids[1])
+        emitidas = modelo.config_a_json(cfg)["macros"]
+        self.assertEqual([m["id"] for m in emitidas], ids)
+
+    def test_la_basura_que_no_es_objeto_no_se_conserva(self):
+        """De un 42 o un None no hay nada que guardar, y no debe romper el guardado."""
+        cfg, _ = modelo.validar_config({"version": 1, "macros": [42, None, "hola",
+                                                                _macro_ok()]})
+        emitidas = modelo.config_a_json(cfg)["macros"]
+        self.assertEqual(len(emitidas), 1)
+        self.assertEqual(emitidas[0]["nombre"], "Minar")
+
+    def test_una_macro_valida_no_arrastra_bruto(self):
+        m = modelo.validar_macro(_macro_ok())
+        self.assertIsNone(m.bruto)
+
+    def test_el_bruto_no_comparte_memoria_con_la_entrada(self):
+        bruto = self._futura()
+        m = modelo.validar_macro(bruto)
+        bruto["accion"]["vueltas"] = 99
+        self.assertEqual(m.bruto["accion"]["vueltas"], 3)
+
+
 class Recursos(unittest.TestCase):
 
     def test_recursos_de_secuencia(self):

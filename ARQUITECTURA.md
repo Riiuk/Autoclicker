@@ -124,8 +124,12 @@ Estos son los que rompen cosas de verdad si se tocan sin pensar.
    la cadena para el resto del software del sistema.
 6. **El hook se instala y se desinstala siempre desde su propio hilo.** `SetWindowsHookEx` desde
    otro hilo devuelve un handle válido cuyo callback no se dispara jamás.
-7. **El validador nunca lanza.** Cualquier `config.json` que no cuadre degrada la macro a
-   `soportada=False` con un motivo legible. → `pruebas/test_modelo.py::ValidadorNoLanza`
+7. **El validador nunca lanza, y nunca tira nada.** Cualquier `config.json` que no cuadre
+   degrada la macro a `soportada=False` con un motivo legible, y su JSON original se conserva
+   en `Macro.bruto` para devolverlo intacto al guardar. Perder la macro de alguien por no
+   entenderla sería peor que el fallo que la hizo ilegible.
+   → `pruebas/test_modelo.py::ValidadorNoLanza`, `::ConservaLoNoSoportado`,
+   `pruebas/test_almacen.py::GuardarYCargar::test_una_macro_no_soportada_sobrevive_en_disco`
 8. **Solo se persiste en ediciones del usuario**, nunca en transiciones por hotkey, y con
    debounce fuera del hilo de Tk.
 
@@ -159,11 +163,15 @@ repartidas: se podía añadir un botón y olvidarse de soltarlo en el camino de 
    describirá la macro sin decir sobre qué actúa.
 5. `pruebas/test_motor.py`: como mínimo, que tras pararlo no queda nada pulsado.
 
-Sobre `VERSION_CONFIG`: puedes no subirlo, pero sabiendo lo que pasa. Una versión anterior del
-programa marcará el tipo desconocido como `soportada=False` y lo dirá, pero **en el siguiente
-guardado esa macro desaparece del `config.json`**, porque `config_a_json` solo serializa las
-soportadas. Queda el `.bak`, que aguanta un guardado. Si la macro tiene que sobrevivir a una
-vuelta atrás, sube `VERSION_CONFIG` y trátalo en `almacen.migrar()`.
+Sobre `VERSION_CONFIG`: **no hace falta subirlo** para añadir un tipo. Una versión anterior del
+programa marcará el tipo desconocido como `soportada=False`, lo dirá, y al guardar devolverá su
+JSON original intacto (`modelo.macros_a_json`), así que la macro sobrevive a la ida y a la
+vuelta.
+
+Súbelo cuando el cambio altere el significado de algo que las versiones antiguas **creen**
+entender —renombrar un campo, cambiar unidades, reinterpretar un valor existente—, porque ahí
+no hay degradación que valga: la versión antigua lo leería mal sin enterarse. En ese caso, la
+rama correspondiente va en `almacen.migrar()`.
 
 ### Añadir un ajuste
 
@@ -209,7 +217,6 @@ dónde se empieza.
 
 | Idea | Por dónde |
 |---|---|
-| Que una macro no soportada no se pierda al guardar | Guardar el JSON original de las macros que el validador no entiende y volver a emitirlo tal cual en `config_a_json`. Hoy se borran en el siguiente guardado. |
 | Integración continua | Un workflow de GitHub Actions sobre `windows-latest` que ejecute las pruebas en cada push. Es lo más barato de todo y lo que más protege. |
 | Icono en la bandeja del sistema con menú de activar/parar | `Shell_NotifyIconW` por ctypes sobre una ventana oculta en el hilo del hook. Cuidado: si el GC se lleva el `WNDPROC`, el proceso muere sin traceback. |
 | Arrancar con Windows | Valor en `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, con casilla en Ajustes. |
